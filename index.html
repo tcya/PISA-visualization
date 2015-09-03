@@ -163,15 +163,16 @@
 <button id="prev" onclick="prev()">Prev</button>
 <button id="next" onclick="next()">Next</button>
 </div>
-
+<div class="container" id="slide1">
+<p>Does the use of computer, cell, tv... harm children's study? It's a controversial topic in daily life. Some people state that electronic devices make kids indulged and are distracting, while some argue that they help kids to get information. Surely they both have a point. The Programme for International Student Assessment (PISA) is an international assessment that measures 15-year-old students' reading, mathematics, and science literacy. It also collects family information about students, especially, it asks students the number of tv, car, cellphone, computer, and bathroom their families own. It provides a good way to test the common beliefs on the relation between family's possession and kids' study.
+I combine part of PISA 2012 data with the corresponding regions' GDP data and explore (for technical details, see <a href="details.html">here</a>). As the data can only show correlation, not causation, so besides the "utility effect" mentioned above, another potential factor can contribute to the relation - the number of possession reflects families' financial state, which can affect students' score. I call it the "fortune effect". I expect that fortune effect is more significant in poor country than in rich country.</p>
+</div>
 <script type="text/javascript">
   "use strict";
   var gdp;
   d3.json("EDA/generated_data/gdp_pisa.json", function(json) { gdp = json; });
 
   var page = 1;
-
-  slide1();
 
   function prev() {
       if (page > 1) {page = page - 1;}
