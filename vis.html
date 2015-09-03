@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+
+      .bar {
+        fill: steelblue;
+      }
+
+      .bar:hover {
+        fill: brown;
+      }
+
+      .axis {
+        font: 11px sans-serif;
+      }
+
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
+
+      .x.axis path {
+        display: none;
+      }
+
+      .x text {
+          /*font-family: sans-serif;*/
+          font-size: 18px;
+      }
+
+      .d3-tip {
+          position: absolute;
+          text-align: center;
+          padding: 8px;
+          font: 12px sans-serif;
+          background: gray;
+          border: 0px;
+          border-radius: 8px;
+      }
+
+      #tooltip {
+        position: absolute;
+        z-index: 10;
+        visibility: hidden;
+        -moz-transition: all 0.15s;
+        -o-transition: all 0.15s;
+        -webkit-transition: all 0.15s;
+        transition: all 0.15s;
+        opacity: 0.90;
+        min-width: 60px;
+        height: auto;
+        padding: 10px;
+        background-color: white;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
+        -webkit-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+        -moz-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+        box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+      }
+
+      #title {font: 20px sans-serif;}
+
+    </style>
+
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
+    <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+  </head>
+<body>
+    <script>
+        "use strict";
+        var margin = {top: 50, right: 20, bottom: 50, left: 50},
+        width = 960 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
+
+        var x = d3.scale.ordinal()
+            .rangeRoundBands([0, width], .1);
+
+        var x1 = d3.scale.ordinal();
+
+        var y = d3.scale.linear()
+            .range([height, 0]);
+
+        var color = d3.scale.ordinal()
+            .range(["#80B1D3", "#fb8072", "#fdb462"]);
+
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .tickSize([0])
+            .orient("bottom");
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left");
+
+        var lab_dict = {"None": "0", "One": "1", "Two": "2", "Three or more": "> 3"};
+
+        var xAxis_bot = d3.svg.axis()
+            .scale(x1)
+            .orient("bottom")
+            .tickFormat(function(d) { return lab_dict[d]; })
+            .tickSize([0])
+            .tickPadding(8);
+
+        var tip = d3.tip()
+            .attr('class', 'd3-tip')
+            .offset([-10, 0])
+            .html(function(d) {
+              return "<strong>Minimum: </strong> <span style='color: #66ccff'>" + d.value["Minimum"] +
+              "</span></br><strong>1st quantile: </strong> <span style='color: #66ccff'>" + d.value["First quantile"] +
+              "</span></br><strong>Median: </strong> <span style='color: #66ccff'>" + d.value["Median"] +
+              "</span></br><strong>3rd quantile: </strong> <span style='color: #66ccff'>" + d.value["Third quantile"] +
+              "</span></br><strong>Maximum: </strong> <span style='color: #66ccff'>" + d.value["Maximum"];
+            })
+
+        var tooltip = d3.select("body")
+            .append("div")
+            .attr("id", "tooltip");
+
+        var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // svg.call(tip);
+
+        d3.json("EDA/generated_data/data.json", function(error, json) {
+            if (error) return console.warn(error);
+            var country = "Albania";
+            var factor = "bathroom";
+            var data = json[country][factor];
+
+            var y_max = 0;
+            for (var s in data){
+                for (var m in data[s]){
+                    var tmp = data[s][m]["Maximum"];
+                    if (tmp > y_max) {y_max = tmp;}
+            }}
+            y_max = Math.floor(y_max/100 + 2) * 100;
+
+            color.domain(["Maths", "Reading", "Science"]);
+
+            x.domain(["Maths", "Science", "Reading"]);
+            x1.domain(["None", "One", "Two", "Three or more"]).rangeRoundBands([0, x.rangeBand()]);
+            y.domain([0, y_max]).nice();
+
+            svg.append("g")
+              .attr("class", "x axis")
+              .attr("transform", "translate(0," + 0 + ")")
+              .call(xAxis);
+
+            svg.append("g")
+              .attr("class", "y axis")
+              .call(yAxis);
+
+            svg.append("g")
+              .attr("class", "xbottom axis")
+              .attr("transform", "translate(" + 0.35 * x1.rangeBand() + "," + height + ")")
+              .call(xAxis_bot);
+
+            var displacement = (x.range()[1] - x.range()[0]) + 0.35 * x1.rangeBand();
+            svg.append("g")
+              .attr("class", "xbottom axis")
+              .attr("transform", "translate(" + displacement + "," + height + ")")
+              .call(xAxis_bot);
+
+            var displacement = 2 * (x.range()[1] - x.range()[0]) + 0.35 * x1.rangeBand();
+            svg.append("g")
+              .attr("class", "xbottom axis")
+              .attr("transform", "translate(" + displacement + "," + height + ")")
+              .call(xAxis_bot);
+
+
+            var subject = svg.selectAll(".subject")
+                .data(d3.entries(data))
+                .enter().append("g")
+                .attr("class", "g_poss")
+                .attr("transform", function(d) { return "translate(" + x(d.key) + ",0)"; })
+                .style("stroke", function(d) { return color(d.key); });
+
+            // Make the box
+            subject.selectAll(".box")
+                .data(function(d) { return d3.entries(d.value); })
+                .enter().append("rect")
+                .attr("class", "med_box")
+                .attr("x", function(d) { return x1(d.key)})
+                .attr("width", x1.rangeBand() * 0.8)
+                .attr("y", function(d) { return y(d.value["Third quantile"]); })
+                .attr("height", function(d) { return y(d.value["First quantile"]) - y(d.value["Third quantile"]); })
+                .style("stroke-width", 1.5)
+                .style("fill", "white")
+                // .on('mouseover', tip.show)
+                // .on('mouseout', tip.hide);
+                .on("mouseover", function(d) {
+                     return tooltip.html(
+              "<strong>Minimum: </strong> <span style='color: #66ccff'>" + d.value["Minimum"] +
+              "</span></br><strong>1st quantile: </strong> <span style='color: #66ccff'>" + d.value["First quantile"] +
+              "</span></br><strong>Median: </strong> <span style='color: #66ccff'>" + d.value["Median"] +
+              "</span></br><strong>3rd quantile: </strong> <span style='color: #66ccff'>" + d.value["Third quantile"] +
+              "</span></br><strong>Maximum: </strong> <span style='color: #66ccff'>" + d.value["Maximum"] )
+                                   .style("visibility", "visible");})
+                .on("mousemove", function(){
+                     return tooltip.style("top", (d3.event.pageY-10)+"px")
+                                   .style("left",(d3.event.pageX+10)+"px");
+                                })
+                .on("mouseout", function(){
+                     return tooltip.style("visibility", "hidden");});
+
+            // Make the median line
+            subject.selectAll(".median")
+                .data(function(d) { return d3.entries(d.value); })
+                .enter().append("line")
+                .attr("class", "median")
+                .attr("x1", function(d) { return x1(d.key)})
+                .attr("x2", function(d) { return x1(d.key) + 0.8 * x1.rangeBand()})
+                .attr("y1", function(d) { return y(d.value["Median"]); })
+                .attr("y2", function(d) { return y(d.value["Median"]); })
+                .style("stroke-width", 1.5);
+
+            // Make the minimum line
+            subject.selectAll(".min")
+                .data(function(d) { return d3.entries(d.value); })
+                .enter().append("line")
+                .attr("class", "min")
+                .attr("x1", function(d) { return x1(d.key) + 0.1 * x1.rangeBand()})
+                .attr("x2", function(d) { return x1(d.key) + 0.7 * x1.rangeBand()})
+                .attr("y1", function(d) { return y(d.value["Minimum"]); })
+                .attr("y2", function(d) { return y(d.value["Minimum"]); })
+                .style("stroke-width", 2)
+                .style("stroke-dasharray", "4, 4");
+
+            // Make the maximum line
+            subject.selectAll(".max")
+                .data(function(d) { return d3.entries(d.value); })
+                .enter().append("line")
+                .attr("class", "max")
+                .attr("x1", function(d) { return x1(d.key) + 0.1 * x1.rangeBand()})
+                .attr("x2", function(d) { return x1(d.key) + 0.7 * x1.rangeBand()})
+                .attr("y1", function(d) { return y(d.value["Maximum"]); })
+                .attr("y2", function(d) { return y(d.value["Maximum"]); })
+                .style("stroke-width", 2)
+                .style("stroke-dasharray", "4, 4");
+
+            // Make the vertical line
+            subject.selectAll(".lower_vert")
+                .data(function(d) { return d3.entries(d.value); })
+                .enter().append("line")
+                .attr("class", "vertical")
+                .attr("x1", function(d) { return x1(d.key) + 0.4 * x1.rangeBand()})
+                .attr("x2", function(d) { return x1(d.key) + 0.4 * x1.rangeBand()})
+                .attr("y1", function(d) { return y(d.value["Minimum"]); })
+                .attr("y2", function(d) { return y(d.value["First quantile"]); })
+                .style("stroke-width", 1.5)
+                .style("stroke-dasharray", "4, 4");
+
+            subject.selectAll(".upper_vert")
+                .data(function(d) { return d3.entries(d.value); })
+                .enter().append("line")
+                .attr("class", "vertical")
+                .attr("x1", function(d) { return x1(d.key) + 0.4 * x1.rangeBand()})
+                .attr("x2", function(d) { return x1(d.key) + 0.4 * x1.rangeBand()})
+                .attr("y1", function(d) { return y(d.value["Maximum"]); })
+                .attr("y2", function(d) { return y(d.value["Third quantile"]); })
+                .style("stroke-width", 1.5)
+                .style("stroke-dasharray", "4, 4");
+
+            // Add axis labels
+            svg.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform", "translate("+ (margin.top/2 - margin.left - 10) +","+(height/2)+") rotate(-90)")
+                .text("Score");
+
+            svg.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform", "translate("+ (width/2) +","+(height + margin.bottom - 5)+")")
+                .text("Number of possession");
+
+            // Add title
+            svg.append("text")
+              .attr("x", width/2)
+              .attr("y", -margin.top /2 )
+              .attr("text-anchor", "middle")
+              .attr("id", "title")
+              .text("How does the # of " + factor + " affect score in " + country + "?");
+
+            // Add grid lines
+            // svg.selectAll("line.horizontalGrid").data(y.ticks(y_max/100)).enter()
+            //     .append("line")
+            //     .attr(
+            //         {
+            //             "class":"horizontalGrid",
+            //             "x1" : 0,
+            //             "x2" : width,
+            //             "y1" : function(d){ return y(d);},
+            //             "y2" : function(d){ return y(d);},
+            //             "fill" : "none",
+            //             "shape-rendering" : "crispEdges",
+            //             "stroke" : "gray",
+            //             "stroke-width" : "0.5px"
+            //         });
+            });
+
+    </script>
+</body>
+</html>

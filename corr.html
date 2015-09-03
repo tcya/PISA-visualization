@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
+  <style>
+    #title {font: 20px sans-serif;}
+  </style>
+</head>
+<body>
+<div id="chartContainer">
+  <script>
+    "use strict";
+    var margin = {top: 20, right: 20, bottom: 30, left: 50},
+    width = 960 - margin.left - margin.right,
+    height = 550 - margin.top - margin.bottom;
+
+    var x_bot = d3.scale.ordinal();
+    var xAxis_bot = d3.svg.axis()
+        .scale(x_bot)
+        .tickSize([0])
+        .orient("bottom");
+
+    d3.tsv("EDA/generated_data/summary.tsv", function (data) {
+      var factors = ["bathroom", "car", "cell", "tv", "pc"];
+      var factor = factors[4];
+      var svg = dimple.newSvg("#chartContainer", width, height);
+      var myChart = new dimple.chart(svg, data);
+      var x_chart = 80;
+      var y_chart = 60;
+      var w_chart = 550;
+      var h_chart = 330;
+
+      myChart.setBounds(x_chart, y_chart, w_chart, h_chart);
+      var x = myChart.addCategoryAxis("x", ["Subject", "Correlation"]);
+      x.addGroupOrderRule(["Negative", "Insignificant", "Positive"]);
+      x.fontSize = 20;
+      x.title = "Correlation";
+      var y = myChart.addMeasureAxis("y", "Count_" + factor);
+      y.overrideMax = 30;
+      y.fontSize = 15;
+      y.title = "Count";
+      myChart.addSeries([ "Subject","Income"], dimple.plot.line);
+      var s = myChart.addSeries("Income", dimple.plot.scatter);
+      s.addOrderRule(["High", "Medium", "Low"]);
+      var myLegend = myChart.addLegend(65, y_chart - 20, w_chart + 50, 20, "right", [s]);
+      myLegend.fontSize = 15;
+      myChart.draw();
+
+      // Move x axis to top
+      d3.select(".dimple-axis").attr("transform", function(d) { return "translate(0," + y_chart + ")"; });
+
+      var bar_step = x._scale.range()[1] - x._scale.range()[0];
+      var disp_x = 5;
+      var disp_y = 40;
+      x_bot.domain(["Negative", "Insignificant", "Positive"]).rangeRoundBands([0, bar_step]);
+
+      // Set the x-axis title, especially the position
+      x.titleShape
+        .style("font-size",15)
+        .attr("x", x_chart + 3 * bar_step + 40)
+        .attr("y", y_chart + h_chart +20);
+
+      // Add three small x axes of correlation at bottom
+      svg.append("g")
+        .attr("class", "xbottom dimple-axis")
+        .attr("transform", "translate(" + (x_chart + disp_x) + "," + (y_chart + h_chart + disp_y) +")")
+        .call(xAxis_bot);
+
+      svg.append("g")
+        .attr("class", "xbottom dimple-axis")
+        .attr("transform", "translate(" + (x_chart + bar_step + disp_x) + "," + (y_chart + h_chart + disp_y) +")")
+        .call(xAxis_bot);
+
+      svg.append("g")
+        .attr("class", "xbottom dimple-axis")
+        .attr("transform", "translate(" + (x_chart + 2 * bar_step + disp_x) + "," + (y_chart + h_chart + disp_y) +")")
+        .call(xAxis_bot);
+
+      // Rotate x labels
+      svg.selectAll(".xbottom text").attr("transform", "rotate(45)");
+
+      // Add title
+      svg.append("text")
+        .attr("x", x_chart)
+        .attr("y", 20)
+        .attr("id", "title")
+        .text("How does the # of " + factor + " affect score?");
+    });
+  </script>
+</div>
+</body>
+</html>

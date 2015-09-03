@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Technical details</title>
+</head>
+<body>
+<h2>How were the data processed</h2>
+<p>The PISA data was obtained <a href="https://s3.amazonaws.com/udacity-hosted-downloads/ud507/pisa2012.csv.zip">here</a>. I only keep the columns of country; the number of cellphone, tv, computer, car and bathroom; and the first plausible values of mathematics, reading and science. The corresponding column names are CNT, ST27Q01, ST27Q02, ST27Q03, ST27Q04, ST27Q05, PV1MATH, PV1READ and PV1SCIE. Then the data is extended with the GDP per capita in 2012 of corresponding countries. GDP data was mainly from <a href="http://data.worldbank.org/indicator/NY.GDP.PCAP.CD">world bank</a>. Then the data were processed in file "PISA_exploration.Rmd". It exported several files to folder "generated_data". Some were further processed by script in "reshape_json.py" then the final data for visualization were ready. The world geodata was obtained <a href="https://gist.github.com/markmarkoh/2969317">here</a> with a bit extension to make the country names agree with those in PISA ("clean_geo.py" was used for this purpose.).</p>
+</body>
+</html>

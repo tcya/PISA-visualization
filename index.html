@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>How does possession affect children's scores?</title>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <!-- // <script src="colorbrewer.js"></script> -->
+  <script src="http://colorbrewer2.org/export/colorbrewer.js"></script>
+  <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
+  <style>
+    h1, h2, h3 {
+      text-align: center;
+      color: black;
+      margin-bottom: 0;
+    }
+
+    button {
+      background-color: lightblue;
+    }
+
+    #prev {
+      background-color: lightgray;
+      color: white;
+    }
+
+    #svg-map {
+      margin:10px 10px 0 10px;
+      border:2px solid #000;
+      border-radius: 5px;
+      overflow:hidden;
+      width: 98%;
+    }
+
+    #legend-menu {
+      width: 98%;
+    }
+
+    select {
+      float: right;
+    }
+
+    .list-inline {
+      padding: 0 0 0 1.5em;
+      display: table;
+      width: 80em;
+      float: right;
+      margin-bottom: 0;
+    }
+
+    li {
+      list-style: none;
+      text-align: right;
+      vertical-align: middle;
+      display: inline-block;
+      border-top-width: 15px;
+      border-top-style: solid;
+      font-size: .75em;
+      width: 6%;
+      padding-left: 0;
+      padding-right: 0;
+      font-size: 14px;
+    }
+
+    #map-container {
+/*      position: absolute;
+*/    }
+
+    #legend_name {
+      width: 10em;
+    }
+
+    #maptip {
+      position: absolute;
+      z-index: 10;
+      visibility: hidden;
+      -moz-transition: all 0.15s;
+      -o-transition: all 0.15s;
+      -webkit-transition: all 0.15s;
+      transition: all 0.15s;
+      opacity: 0.90;
+      min-width: 60px;
+      height: auto;
+      padding: 10px;
+      background-color: white;
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+      -webkit-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+      -moz-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+      box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+      pointer-events: none;
+    }
+
+    .box-plot {
+      float: left;
+      width: 15%;
+      margin: 30px;
+    }
+
+    .box-svg {
+/*      width: 12%;
+      height: 250;
+*/      /*margin: 30px;*/
+    }
+    .axis {
+      font: 11px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+
+    .x.axis path {
+      display: none;
+    }
+
+    .x text {
+      /*font-family: sans-serif;*/
+      font-size: 14px;
+    }
+
+    #boxtip {
+      position: absolute;
+      z-index: 100;
+      visibility: hidden;
+      -moz-transition: all 0.15s;
+      -o-transition: all 0.15s;
+      -webkit-transition: all 0.15s;
+      transition: all 0.15s;
+      opacity: 0.90;
+      min-width: 60px;
+      height: auto;
+      padding: 10px;
+      background-color: white;
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+      -webkit-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+      -moz-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+      box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+      pointer-events: none;
+    }
+
+
+    .chart {
+      float: left;
+      width: 40%;
+      margin-right: 100px;
+    }
+
+
+    /*#slide1 {display: none;}*/
+    /*#slide2 {display: none;}*/
+    /*#map-container {display: none;}*/
+  </style>
+</head>
+<body>
+<h1>How does possession affect children's scores?</h1>
+<div id="buttons">
+<button id="prev" onclick="prev()">Prev</button>
+<button id="next" onclick="next()">Next</button>
+</div>
+
+<script type="text/javascript">
+  "use strict";
+  var gdp;
+  d3.json("EDA/generated_data/gdp_pisa.json", function(json) { gdp = json; });
+
+  var page = 1;
+
+  slide1();
+
+  function prev() {
+      if (page > 1) {page = page - 1;}
+      set_button();
+      update_page();
+  }
+
+  function next() {
+      if (page < 7) {page = page + 1;}
+      set_button();
+      update_page();
+  }
+
+  function set_button() {
+      if (page === 1) {
+        d3.select("#prev")
+          .style({"background-color": "lightgray",
+                  color: "white"});
+      } else {
+        d3.select("#prev")
+          .style({"background-color": "lightblue",
+                  color: "black"});
+      }
+      if (page === 7) {
+        d3.select("#next")
+          .style({"background-color": "lightgray",
+                  color: "white"});
+      } else {
+        d3.select("#next")
+          .style({"background-color": "lightblue",
+                  color: "black"});
+      }
+  }
+
+  function update_page() {
+      d3.selectAll(".container").remove();
+      eval("slide" + page + "()");
+  }
+
+  // slide1();
+  function slide1() {
+      var t = "Does the use of computer, cell, tv... harm children's study? It's a controversial topic in daily life. Some people state that electronic devices make kids indulged and are distracting, while some argue that they help kids to get information. Surely they both have a point. The Programme for International Student Assessment (PISA) is an international assessment that measures 15-year-old students' reading, mathematics, and science literacy. It also collects family information about students, especially, it asks students the number of tv, car, cellphone, computer, and bathroom their families own. It provides a good way to test the common beliefs on the relation between family's possession and kids' study.<br>" +
+        "I combine part of PISA 2012 data with the corresponding regions' GDP data and explore (for technical details, " +
+        'see <a href="details.html">here</a>). As the data can only show correlation, not causation, so besides the "utility effect" mentioned above, ' +
+        "another potential factor can contribute to the relation - the number of possession reflects families' financial state, which can affect students' score. " +
+        'I call it the "fortune effect". I expect that fortune effect is more significant in poor country than in rich country.';
+
+      d3.select("body")
+        .append("div")
+        .attr("id", "slide1")
+        .attr("class", "container")
+        .append('p')
+        .html(t);
+  }
+
+  // slide2();
+  function slide2() {
+      d3.json("EDA/generated_data/gdp_pisa.json", function(json) {
+      var t = "Above are box plots for Peru and Vietnam. Both are low income countries. For most factors and subjects, scores increase significantly with the number of possession. Exceptions are that in Peru, the students in families with ≥3 cars perform worse than those with 2 cars. Maybe kids in such top rich families in a poor country don't need to study well. The rule holds in Vietnam too, but more interestingly, the scores start to worsen when families get 2 cars. Considering Vietnam is much poorer than Peru, maybe having 2 cars is enough to spoil kids. I suppose that the fortune has good effect for the poor, but not for the richest class.";
+
+      d3.select("body")
+        .append("div")
+        .attr("id", "slide2")
+        .attr("class", "container");
+
+      plot_boxes("Peru", "#slide2");
+      d3.selectAll(".box-plot").attr("id",null);
+      d3.selectAll("#box-plots").attr("id",null);
+      plot_boxes("Vietnam", "#slide2");
+      d3.selectAll("#box-plots").style("clear", "both");
+      d3.select("#slide2")
+        .append("p")
+        .style("clear", "both")
+        .text(t);
+      });
+  }
+
+  // slide3();
+  function slide3() {
+      d3.json("EDA/generated_data/gdp_pisa.json", function(json) {
+      var t = "Now let's turn to rich countries. For most factors, they still have positive correlation with score, but not as significant as in poor countries. A significant exception is TV. It seems that in rich country, if you want your kids to be good students, you might want to have fewer TV. The trend is especially clear in Switzerland. There the number of TV has significant negative correlation with score. The reason may be that most people in rich countries can easily afford TV so the fortune effect is weak, while the distraction effect becomes important. It's partially verified in US, where students in the families with one TV perform better than those have none. There are more new poor immigrants in America than in Switzerland, who can't even afford one TV. Usually their kids have to struggle hard at school because of the weakness in language, economics, parental education... This abnormal trend may reflect their existence.";
+
+      d3.select("body")
+        .append("div")
+        .attr("id", "slide3")
+        .attr("class", "container");
+
+      plot_boxes("United States", "#slide3");
+      d3.selectAll(".box-plot").attr("id",null);
+      d3.selectAll("#box-plots").attr("id",null);
+      plot_boxes("Switzerland", "#slide3");
+      d3.selectAll("#box-plots").style("clear", "both");
+      d3.select("#slide3")
+        .append("p")
+        .style("clear", "both")
+        .text(t);
+      });
+  }
+
+  // plot_boxes("United States"); WEIRD!!!! It can't access gdp.
+
+
+  // slide4();
+  function slide4() {
+      d3.select("body")
+        .append("div")
+        .attr("id", "slide4")
+        .attr("class", "container chartContainer");
+
+      var t = 'Inspired by the observations, I summarize the correlation for all countries by income. From daily experience and the observation of data, I define low income country as one with GDP per capita < $15000, medium income as $15000  < GDP per capita < $30000, and the rest as high income countries. The data points of "none" possession were excluded because they might represent very different groups of people to the majority of society, as discussed before. From possessing one to two, to three and more, if a country' + "'" + "s median score strictly increases, it's defined as positive correlation; if the median decreases, it's a negative correlation; else, insignificant.<br>" +
+        "From the graphs we can see that in most countries having more bathrooms is positively correlated with scores, while the number of cars doesn't show a significant correlation.";
+
+      d3.select("#slide4")
+        .append("p")
+        .style("clear", "both")
+        .html(t);
+
+      d3.select(".chartContainer")
+        .append("div")
+        .attr("class", "chart")
+        .attr("id", "chart1");
+
+      d3.select(".chartContainer")
+        .append("div")
+        .attr("class", "chart")
+        .attr("id", "chart2");
+
+      draw_counts("bathroom", "#chart1");
+      draw_counts("car", "#chart2");
+  }
+
+  // slide5();
+  function slide5() {
+      d3.select("body")
+        .append("div")
+        .attr("id", "slide5")
+        .attr("class", "container chartContainer");
+
+      var t = "Cellphone and pc are two common electronic devices in daily life and both are sometimes said to distract students. However, the data are strongly against the common saying. They both have positive correlation with score in most countries. Actually, for cellphone, no country shows negative correlation, and for computer, only one country shows negative correlation, in maths.";
+
+      d3.select("#slide5")
+        .append("p")
+        .style("clear", "both")
+        .html(t);
+
+      d3.select(".chartContainer")
+        .append("div")
+        .attr("class", "chart")
+        .attr("id", "chart1");
+
+      d3.select(".chartContainer")
+        .append("div")
+        .attr("class", "chart")
+        .attr("id", "chart2");
+
+      draw_counts("cell", "#chart1");
+      draw_counts("pc", "#chart2");
+  }
+
+  // slide6();
+  function slide6() {
+      d3.select("body")
+        .append("div")
+        .attr("id", "slide6")
+        .attr("class", "container chartContainer");
+
+      var t = "The most interesting factor is TV. In low income countries, it usually gives positive correlation, while in high income countries, negative. My explanation is that in poor countries, having more TV indicates a better family financial status, which can make big differences in every aspects of lives in poor countries. On the contrary, in rich countries, having 5 TV doesn't mean you're rich, but you're not working hard.";
+
+      d3.select("#slide6")
+        .append("p")
+        .style("clear", "both")
+        .html(t);
+
+      d3.select(".chartContainer")
+        .append("div")
+        .attr("class", "chart")
+        .attr("id", "chart1");
+
+      draw_counts("tv", "#chart1");
+  }
+
+  // slide7();
+  function slide7() {
+      d3.select('body')
+          .append('div')
+          .attr("class", "container")
+          .attr('id', 'slide7');
+
+      d3.select('#slide7')
+        .append("p")
+        .text("Now it's your time to explore. Just click on the map or choose from the drop down menu.");
+
+      // Draw interactive map
+      d3.json("world_map.json", draw);
+
+      function draw(geo_data) {
+        // "use strict";
+        var margin = 75;
+        var width = 1200 - margin;
+        var height = 300 - margin;
+
+
+        var zoom = d3.behavior.zoom()
+            .scaleExtent([1, 9])
+            .on("zoom", zoomed);
+
+        var color = d3.scale.quantize()
+            .domain([0, 100000])
+            .range(colorbrewer.Spectral[10]);
+
+        var color_fill = function (cnt) {
+            if (gdp[cnt.properties.name]) {
+                              return color(gdp[cnt.properties.name]); }
+            else { return "white"; }
+        }
+
+        d3.select('#slide7')
+            .append('div')
+            .attr('id', 'map-container');
+
+        var legend = d3.select('#map-container')
+            .append("div")
+            .attr("id", "legend-menu")
+            .append('ul')
+            .attr('class', 'list-inline');
+
+        var select = d3.select("#legend-menu")
+            .append("select")
+            .on("change", change);
+
+        function change() {
+            var selectedIndex = select.property('selectedIndex');
+            var cnt = options[0][selectedIndex].__data__;
+            d3.select("#box-plots").remove();
+            plot_boxes(cnt, "#map-container");
+        }
+
+        var options = select.selectAll('option')
+            .data(d3.keys(gdp))
+            .enter()
+            .append("option")
+            .text(function(d) { return d; });
+
+        legend.append('li')
+            .style('border-top-color', "white")
+            .attr('id', 'legend_name')
+            .text("GDP per capita ($):");
+
+        legend.selectAll('li.key')
+            .data(color.range())
+            .enter()
+            .append('li')
+            .attr('class', 'key')
+            .style('border-top-color', String)
+            .text(function(d) {
+                var r = color.invertExtent(d);
+                return r[1];
+            });
+
+        var maptip = d3.select("#map-container")
+            .append("div")
+            .attr("id", "maptip");
+
+        var svg_map = d3.select("#map-container")
+            .append("div")
+            .attr("id", "world-map")
+            .append("svg")
+            .attr("id", "svg-map")
+            .attr("width", width + margin)
+            .attr("height", height + margin)
+            .append('g')
+            .attr('class', 'map');
+
+        var projection = d3.geo.mercator()
+                               .scale(70)
+                               .translate([width / 2, height - 15]);
+
+        var path = d3.geo.path().projection(projection);
+
+        var map = svg_map.selectAll('path')
+                     .data(geo_data.features)
+                     .enter()
+                     .append('path')
+                     .attr('d', path)
+                     .style('fill', color_fill)
+                     .style('stroke', 'black')
+                     .style('stroke-width', 0.8)
+                     .on("mouseover", function(d) {
+                          d3.select(this)
+                              .style("fill", "yellow");
+                          return maptip.html(
+                                           "<strong>" + d.properties.name + "</strong>" + "<br/>" +
+                                              "GDP per capita: $" + Math.round(gdp[d.properties.name]))
+                                        .style("visibility", "visible");})
+                     .on("mousemove", function(){
+                          return maptip.style("top", (d3.event.pageY-10)+"px")
+                                        .style("left",(d3.event.pageX+10)+"px");
+                                      })
+                     .on("mouseout", function(){
+                          d3.select(this)
+                              .style("fill", color_fill);
+                          return maptip.style("visibility", "hidden");})
+                     .on("click", clicked)
+                     .call(zoom);
+
+        function zoomed() {
+          map.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+        }
+
+        function clicked(cnt) {
+          d3.select("#box-plots").remove();
+
+          if (d3.keys(gdp).indexOf(cnt.properties.name) !== -1) {
+              var cnt = cnt.properties.name;
+              plot_boxes(cnt, "#map-container");
+          }
+        }
+      }
+  }
+
+  function draw_counts(factor, selection) {
+    d3.tsv("EDA/generated_data/summary.tsv", function (data) {
+      var margin = {top: 20, right: 20, bottom: 30, left: 50},
+      width = 960 - margin.left - margin.right,
+      height = 550 - margin.top - margin.bottom;
+
+      var x_bot = d3.scale.ordinal();
+      var xAxis_bot = d3.svg.axis()
+          .scale(x_bot)
+          .tickSize([0])
+          .orient("bottom");
+      var svg = dimple.newSvg(selection, width, height);
+      var myChart = new dimple.chart(svg, data);
+      var x_chart = 80;
+      var y_chart = 60;
+      var w_chart = 550;
+      var h_chart = 330;
+
+      myChart.setBounds(x_chart, y_chart, w_chart, h_chart);
+      var x = myChart.addCategoryAxis("x", ["Subject", "Correlation"]);
+      x.addGroupOrderRule(["Negative", "Insignificant", "Positive"]);
+      x.fontSize = 20;
+      x.title = "Correlation";
+      var y = myChart.addMeasureAxis("y", "Count_" + factor);
+      y.overrideMax = 30;
+      y.fontSize = 15;
+      y.title = "Count";
+      myChart.addSeries([ "Subject","Income"], dimple.plot.line);
+      var s = myChart.addSeries("Income", dimple.plot.scatter);
+      s.addOrderRule(["High", "Medium", "Low"]);
+      var myLegend = myChart.addLegend(65, y_chart - 20, w_chart + 50, 20, "right", [s]);
+      myLegend.fontSize = 15;
+      myChart.draw();
+
+      // Move x axis to top
+      d3.select(selection + " .dimple-axis")
+        .attr("transform", function(d) { return "translate(0," + y_chart + ")"; });
+
+      var bar_step = x._scale.range()[1] - x._scale.range()[0];
+      var disp_x = 5;
+      var disp_y = 40;
+      x_bot.domain(["Negative", "Insignificant", "Positive"]).rangeRoundBands([0, bar_step]);
+
+      // Set the x-axis title, especially the position
+      x.titleShape
+        .style("font-size",15)
+        .attr("x", x_chart + 3 * bar_step + 40)
+        .attr("y", y_chart + h_chart +20);
+
+      // Add three small x axes of correlation at bottom
+      svg.append("g")
+        .attr("class", "xbottom dimple-axis")
+        .attr("transform", "translate(" + (x_chart + disp_x) + "," + (y_chart + h_chart + disp_y) +")")
+        .call(xAxis_bot);
+
+      svg.append("g")
+        .attr("class", "xbottom dimple-axis")
+        .attr("transform", "translate(" + (x_chart + bar_step + disp_x) + "," + (y_chart + h_chart + disp_y) +")")
+        .call(xAxis_bot);
+
+      svg.append("g")
+        .attr("class", "xbottom dimple-axis")
+        .attr("transform", "translate(" + (x_chart + 2 * bar_step + disp_x) + "," + (y_chart + h_chart + disp_y) +")")
+        .call(xAxis_bot);
+
+      // Rotate x labels
+      svg.selectAll(selection + " .xbottom text").attr("transform", "rotate(45)");
+
+      // Add title
+      svg.append("text")
+        .attr("x", x_chart)
+        .attr("y", 20)
+        .attr("id", "title")
+        .text("How does the # of " + factor + " affect score?");
+    });
+  }
+
+  function plot_boxes(cnt, selection) {
+    d3.select(selection)
+      .append("div")
+      .attr("id", "box-plots")
+
+    d3.select("#box-plots").append("h3")
+      .text("The effect of possession in " + cnt +
+            " (GDP per capita: $" + Math.round(gdp[cnt]) + ")");
+
+    var box = d3.select("#box-plots").selectAll("div")
+      .data(['bathroom', 'car', 'cell', 'pc', 'tv'])
+      .enter()
+      .append("div")
+      .attr("class", "box-plot")
+      .attr("id", function(d) { return d });
+
+    var boxtip = d3.select("#box-plots")
+                  .append("div")
+                  .attr("id", "boxtip");
+
+    box_plot('bathroom');
+    box_plot('car');
+    box_plot('tv');
+    box_plot('cell');
+    box_plot('pc');
+
+    // Add axis labels
+    d3.select(".box-plot svg g")
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr("transform", "translate(" + (- 35) + "," + 100 + ") rotate(-90)")
+        .text("Score");
+
+    function box_plot(factor) {
+
+      // var margin = {top: 50, right: 20, bottom: 50, left: 50};
+      var width = document.getElementsByClassName('box-plot')[0].offsetWidth;
+      // var height = document.getElementsByClassName('box-plot')[0].offsetHeight;
+      var height = 160;
+      var margin = 50;
+
+      var x = d3.scale.ordinal()
+          .rangeRoundBands([0, width], .1);
+
+      var x1 = d3.scale.ordinal();
+
+      var y = d3.scale.linear()
+          .range([height, 0]);
+
+      var color = d3.scale.ordinal()
+          .range(["#80B1D3", "#fb8072", "#fdb462"]);
+
+      var xAxis = d3.svg.axis()
+          .scale(x)
+          .tickSize([0])
+          .orient("bottom");
+
+      var yAxis = d3.svg.axis()
+          .scale(y)
+          .orient("left");
+
+      var lab_dict = {"None": "0", "One": "1", "Two": "2", "Three or more": "≥3"};
+
+      var xAxis_bot = d3.svg.axis()
+          .scale(x1)
+          .orient("bottom")
+          .tickFormat(function(d) { return lab_dict[d]; })
+          .tickSize([0])
+          .tickPadding(8);
+
+
+      var svg = d3.select("#" + factor)
+          .append("svg")
+          .attr("width", width + margin )
+          .attr("height", height + margin + 50)
+          .attr("class", "box-svg")
+          .append("g")
+          .attr("transform", "translate(" + margin + "," + margin + ")");
+
+      d3.json("EDA/generated_data/data.json", function(error, json) {
+          if (error) return console.warn(error);
+
+          var data = json[cnt][factor];
+
+          var y_max = 0;
+          for (var s in data){
+              for (var m in data[s]){
+                  var tmp = data[s][m]["Maximum"];
+                  if (tmp > y_max) {y_max = tmp;}
+          }}
+          y_max = Math.floor(y_max/100 + 2) * 100;
+
+          color.domain(["Maths", "Reading", "Science"]);
+
+          x.domain(["Maths", "Science", "Reading"]);
+          x1.domain(["None", "One", "Two", "Three or more"]).rangeRoundBands([0, x.rangeBand()]);
+          y.domain([0, y_max]).nice();
+
+          svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + 0 + ")")
+            .call(xAxis);
+
+          svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis);
+
+          svg.append("g")
+            .attr("class", "xbottom axis")
+            .attr("transform", "translate(" + 0.35 * x1.rangeBand() + "," + height + ")")
+            .call(xAxis_bot);
+
+          var displacement = (x.range()[1] - x.range()[0]) + 0.35 * x1.rangeBand();
+          svg.append("g")
+            .attr("class", "xbottom axis")
+            .attr("transform", "translate(" + displacement + "," + height + ")")
+            .call(xAxis_bot);
+
+          displacement = 2 * (x.range()[1] - x.range()[0]) + 0.35 * x1.rangeBand();
+          svg.append("g")
+            .attr("class", "xbottom axis")
+            .attr("transform", "translate(" + displacement + "," + height + ")")
+            .call(xAxis_bot);
+
+          var subject = svg.selectAll(".subject")
+              .data(d3.entries(data))
+              .enter().append("g")
+              .attr("class", "g_poss")
+              .attr("transform", function(d) { return "translate(" + x(d.key) + ",0)"; })
+              .style("stroke", function(d) { return color(d.key); });
+
+          // Make the box
+          subject.selectAll(".box")
+              .data(function(d) { return d3.entries(d.value); })
+              .enter().append("rect")
+              .attr("class", "med_box")
+              .attr("x", function(d) { return x1(d.key)})
+              .attr("width", x1.rangeBand() * 0.8)
+              .attr("y", function(d) { return y(d.value["Third quantile"]); })
+              .attr("height", function(d) { return y(d.value["First quantile"]) - y(d.value["Third quantile"]); })
+              .style("stroke-width", 1.5)
+              .style("fill", "white")
+              .on("mouseover", function(d) {
+                   return boxtip.html(
+            "<strong>Minimum: </strong> <span style='color: #66ccff'>" + d.value["Minimum"] +
+            "</span></br><strong>1st quantile: </strong> <span style='color: #66ccff'>" + d.value["First quantile"] +
+            "</span></br><strong>Median: </strong> <span style='color: #66ccff'>" + d.value["Median"] +
+            "</span></br><strong>3rd quantile: </strong> <span style='color: #66ccff'>" + d.value["Third quantile"] +
+            "</span></br><strong>Maximum: </strong> <span style='color: #66ccff'>" + d.value["Maximum"] )
+                                 .style("visibility", "visible");})
+              .on("mousemove", function(){
+                   return boxtip.style("top", (d3.event.pageY-10)+"px")
+                                 .style("left",(d3.event.pageX+10)+"px");
+                              })
+              .on("mouseout", function(){
+                   return boxtip.style("visibility", "hidden");});
+
+          // Make the median line
+          subject.selectAll(".median")
+              .data(function(d) { return d3.entries(d.value); })
+              .enter().append("line")
+              .attr("class", "median")
+              .attr("x1", function(d) { return x1(d.key)})
+              .attr("x2", function(d) { return x1(d.key) + 0.8 * x1.rangeBand()})
+              .attr("y1", function(d) { return y(d.value["Median"]); })
+              .attr("y2", function(d) { return y(d.value["Median"]); })
+              .style("stroke-width", 1.5);
+
+          // Make the minimum line
+          subject.selectAll(".min")
+              .data(function(d) { return d3.entries(d.value); })
+              .enter().append("line")
+              .attr("class", "min")
+              .attr("x1", function(d) { return x1(d.key) + 0.1 * x1.rangeBand()})
+              .attr("x2", function(d) { return x1(d.key) + 0.7 * x1.rangeBand()})
+              .attr("y1", function(d) { return y(d.value["Minimum"]); })
+              .attr("y2", function(d) { return y(d.value["Minimum"]); })
+              .style("stroke-width", 2);
+
+          // Make the maximum line
+          subject.selectAll(".max")
+              .data(function(d) { return d3.entries(d.value); })
+              .enter().append("line")
+              .attr("class", "max")
+              .attr("x1", function(d) { return x1(d.key) + 0.1 * x1.rangeBand()})
+              .attr("x2", function(d) { return x1(d.key) + 0.7 * x1.rangeBand()})
+              .attr("y1", function(d) { return y(d.value["Maximum"]); })
+              .attr("y2", function(d) { return y(d.value["Maximum"]); })
+              .style("stroke-width", 2)
+
+          // Make the vertical line
+          subject.selectAll(".lower_vert")
+              .data(function(d) { return d3.entries(d.value); })
+              .enter().append("line")
+              .attr("class", "vertical")
+              .attr("x1", function(d) { return x1(d.key) + 0.4 * x1.rangeBand()})
+              .attr("x2", function(d) { return x1(d.key) + 0.4 * x1.rangeBand()})
+              .attr("y1", function(d) { return y(d.value["Minimum"]); })
+              .attr("y2", function(d) { return y(d.value["First quantile"]); })
+              .style("stroke-width", 1.5)
+              .style("stroke-dasharray", "4, 4");
+
+          subject.selectAll(".upper_vert")
+              .data(function(d) { return d3.entries(d.value); })
+              .enter().append("line")
+              .attr("class", "vertical")
+              .attr("x1", function(d) { return x1(d.key) + 0.4 * x1.rangeBand()})
+              .attr("x2", function(d) { return x1(d.key) + 0.4 * x1.rangeBand()})
+              .attr("y1", function(d) { return y(d.value["Maximum"]); })
+              .attr("y2", function(d) { return y(d.value["Third quantile"]); })
+              .style("stroke-width", 1.5)
+              .style("stroke-dasharray", "4, 4");
+
+          // // Add axis labels
+          // svg.append("text")
+          //     .attr("text-anchor", "middle")
+          //     .attr("transform", "translate(" + (- 30) + "," + (height/2) + ") rotate(-90)")
+          //     .text("Score");
+
+          svg.append("text")
+              .attr("text-anchor", "middle")
+              .attr("transform", "translate(" + (width/2) + "," + (- 10) + ")")
+              .text(factor);
+
+          svg.append("text")
+              .attr("text-anchor", "middle")
+              .attr("transform", "translate(" + (width/2) + "," +(height + margin - 5) +")")
+              .text("Number of possession");
+
+          // Add title
+          // svg.append("text")
+          //   .attr("x", width/2)
+          //   .attr("y", -margin /2 )
+          //   .attr("text-anchor", "middle")
+          //   .attr("id", "title")
+          //   .text("How does the # of " + factor + " affect score in " + country + "?");
+    });}
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,586 @@
+PISA Exploration by Xunmo Yang
+========================================================
+
+```{r}
+# Load all of the packages that you end up using
+# in your analysis in this code chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk.
+# This prevents the code from displaying in the knitted HTML output.
+# You should set echo=FALSE for all code chunks in your file.
+library(knitr)
+library(grid)
+library(gridExtra)
+library(ggplot2)
+library(data.table)
+library(plyr)
+library(dplyr)
+library(lazyeval)
+library(RJSONIO)
+library(rjson)
+# Set your path accordingly
+setwd("/Users/tcya/Downloads/Data Science/Project5/Final_project/EDA")
+```
+
+```{r}
+# Large!!
+dat <- fread("pisa2012.csv")
+gdp <- data.frame(fread("gdp.csv"))
+gdp <- select(gdp, Country.Name, X2012)
+colnames(gdp)[1] <- "CNT"
+gdp[gdp$CNT == "Korea, Rep.", ]$CNT <- "Korea"
+gdp[gdp$CNT == "Hong Kong SAR, China", ]$CNT <- "Hong Kong-China"
+gdp[gdp$CNT == "Macao SAR, China", ]$CNT <- "Macao-China"
+gdp <- rbind(gdp, c("Chinese Taipei", 39400)) #From indexmundi
+gdp <- rbind(gdp, c("China-Shanghai", 23826)) #From https://en.wikipedia.org/wiki/List_of_Chinese_administrative_divisions_by_GDP_per_capita#2012
+# rich_cnt <- c("Australia", "Greece", "Norway", "Austria", "Hungary", "Poland", "Belgium", "Iceland", "Portugal", "Canada", "Ireland", "Slovak Republic", "Chile", "Italy", "Slovenia", "Czech Republic", "Israel", "Spain", "Denmark", "Japan", "Sweden", "Estonia", "Korea", "Switzerland", "Finland", "Luxembourg", "United Kingdom", "France", "Netherlands", "United States", "Germany", "New Zealand", "China-Shanghai", "Chinese Taipei", "Hong Kong-China", "Macao-China") #From http://data.worldbank.org/about/country-and-lending-groups#OECD_members, added with "China-Shanghai", "Chinese Taipei", "Hong Kong-China", and "Macao-China".
+```
+
+```{r}
+dat <- select(dat, CNT, ST27Q01, ST27Q02, ST27Q03, ST27Q04, ST27Q05, PV1MATH, PV1READ, PV1SCIE)
+```
+
+```{r}
+dat[with(dat, grepl("USA", CNT)),]$CNT <- "United States"
+dat[with(dat, CNT == "United States of America"),]$CNT <- "United States"
+dat[dat$CNT == "Perm(Russian Federation)", ]$CNT <- "Russian Federation"
+```
+
+```{r}
+gdp <- merge(data.frame(CNT = unique(dat$CNT)), gdp, by = "CNT", all.x=TRUE)
+```
+
+```{r}
+dat_sample <- data.frame(dat[sample(1:nrow(dat),1000,replace=FALSE),])
+```
+
+```{r}
+ggplot(aes(x = ST27Q01, y = PV1MATH), data = subset(dat, !is.na(ST27Q01))) + geom_boxplot()#phone
+ggplot(aes(x = ST27Q02, y = PV1MATH), data = subset(dat, !is.na(ST27Q02))) + geom_boxplot()#tv
+ggplot(aes(x = ST27Q03, y = PV1MATH), data = subset(dat, !is.na(ST27Q03))) + geom_boxplot()#pc
+ggplot(aes(x = ST27Q04, y = PV1MATH), data = subset(dat, !is.na(ST27Q04))) + geom_boxplot()#car
+ggplot(aes(x = ST27Q05, y = PV1MATH), data = subset(dat, !is.na(ST27Q05))) + geom_boxplot()#shower
+```
+
+
+```{r}
+dat$ST27Q01 <- factor(dat$ST27Q01, levels = c("None", "One", "Two", "Three or more"))
+ggplot(aes(x = ST27Q01, y = PV1MATH), data = subset(dat, !is.na(ST27Q01))) + geom_boxplot() + facet_wrap(~CNT) #phone
+
+dat$ST27Q02 <- factor(dat$ST27Q02, levels = c("None", "One", "Two", "Three or more"))
+ggplot(aes(x = ST27Q02, y = PV1MATH), data = subset(dat, !is.na(ST27Q02))) + geom_boxplot() + facet_wrap(~CNT) #tv
+
+dat$ST27Q03 <- factor(dat$ST27Q03, levels = c("None", "One", "Two", "Three or more"))
+ggplot(aes(x = ST27Q03, y = PV1MATH), data = subset(dat, !is.na(ST27Q03))) + geom_boxplot() + facet_wrap(~CNT) #pc
+
+dat$ST27Q04 <- factor(dat$ST27Q04, levels = c("None", "One", "Two", "Three or more"))
+ggplot(aes(x = ST27Q04, y = PV1MATH), data = subset(dat, !is.na(ST27Q04))) + geom_boxplot() + facet_wrap(~CNT) #car
+
+dat$ST27Q05 <- factor(dat$ST27Q05, levels = c("None", "One", "Two", "Three or more"))
+ggplot(aes(x = ST27Q05, y = PV1MATH), data = subset(dat, !is.na(ST27Q05))) + geom_boxplot() + facet_wrap(~CNT) #shower
+```
+
+```{r}
+ggplot(aes(x = ST27Q01, y = PV1READ), data = subset(dat, !is.na(ST27Q01))) + geom_boxplot() + facet_wrap(~CNT) #phone
+ggplot(aes(x = ST27Q02, y = PV1READ), data = subset(dat, !is.na(ST27Q02))) + geom_boxplot() + facet_wrap(~CNT) #tv
+ggplot(aes(x = ST27Q03, y = PV1READ), data = subset(dat, !is.na(ST27Q03))) + geom_boxplot() + facet_wrap(~CNT) #pc
+ggplot(aes(x = ST27Q04, y = PV1READ), data = subset(dat, !is.na(ST27Q04))) + geom_boxplot() + facet_wrap(~CNT) #car
+ggplot(aes(x = ST27Q05, y = PV1READ), data = subset(dat, !is.na(ST27Q05))) + geom_boxplot() + facet_wrap(~CNT) #shower
+```
+
+```{r}
+ggplot(aes(x = ST27Q01, y = PV1SCIE), data = subset(dat, !is.na(ST27Q01))) + geom_boxplot() + facet_wrap(~CNT) #phone
+ggplot(aes(x = ST27Q02, y = PV1SCIE), data = subset(dat, !is.na(ST27Q02))) + geom_boxplot() + facet_wrap(~CNT) #tv
+ggplot(aes(x = ST27Q03, y = PV1SCIE), data = subset(dat, !is.na(ST27Q03))) + geom_boxplot() + facet_wrap(~CNT) #pc
+ggplot(aes(x = ST27Q04, y = PV1SCIE), data = subset(dat, !is.na(ST27Q04))) + geom_boxplot() + facet_wrap(~CNT) #car
+ggplot(aes(x = ST27Q05, y = PV1SCIE), data = subset(dat, !is.na(ST27Q05))) + geom_boxplot() + facet_wrap(~CNT) #shower
+```
+
+
+```{r}
+make_dat <- function(fact){
+f <- expand.grid(unique(dat$CNT), c("None", "One", "Two", "Three or more"), c("Maths", "Reading", "Science"))
+colnames(f) <- c("CNT", "Number of possession", "Subject")
+for (i in 
+     c("Minimum", "First quantile", "Median", "Third quantile", "Maximum")) {
+  f[i] <- 0}
+
+for (num in c("None", "One", "Two", "Three or more")) {
+  for (i in 1:3) {
+    tmp <- as.data.frame(dat) %>% 
+      filter_(interp(quote(x == y), x = as.name(fact), y = num)) %>%
+      group_by(CNT) %>% 
+      summarise_(
+              q1 = interp(~min(var), var = as.name(c("PV1MATH", "PV1READ", "PV1SCIE")[i])),
+              q2 = interp(~quantile(var, 0.25), var = as.name(c("PV1MATH", "PV1READ", "PV1SCIE")[i])),
+              q3 = interp(~quantile(var, 0.5), var = as.name(c("PV1MATH", "PV1READ", "PV1SCIE")[i])),
+              q4 = interp(~quantile(var, 0.75), var = as.name(c("PV1MATH", "PV1READ", "PV1SCIE")[i])),
+              q5 = interp(~quantile(var, 1), var = as.name(c("PV1MATH", "PV1READ", "PV1SCIE")[i]))
+) 
+    tmp$Subject <- c("Maths", "Reading", "Science")[i]
+    tmp$num <- num
+    setnames(tmp, "num", "Number of possession")
+    f <- merge(f, tmp, by=c("CNT", "Subject", "Number of possession"), all.x = TRUE)
+    for (j in 1:5) {
+      f[c("Minimum", "First quantile", "Median", "Third quantile", "Maximum")[j]] <- rowSums(cbind(
+        f[c("Minimum", "First quantile", "Median", "Third quantile", "Maximum")[j]], 
+        f[c("q1", "q2", "q3", "q4", "q5")[j]]),
+             na.rm = TRUE)
+    }
+    f <- f[, 1:8]
+  }
+}
+return(f)
+}
+```
+
+```{r}
+dt_cell <- make_dat("ST27Q01")
+dt_tv <- make_dat("ST27Q02")
+dt_pc <- make_dat("ST27Q03")
+dt_car <- make_dat("ST27Q04")
+dt_bathroom <- make_dat("ST27Q05")
+```
+
+```{r}
+q0 <- filter(dat, ST27Q01 == "None") %>% group_by(CNT) %>% 
+    summarise(math_med_none = median(PV1MATH), 
+    read_med_none = median(PV1READ), 
+    sci_med_none = median(PV1SCIE)) 
+q1 <- filter(dat, ST27Q01 == "One") %>% group_by(CNT) %>% 
+    summarise(math_med_one = median(PV1MATH), 
+    read_med_one = median(PV1READ), 
+    sci_med_one = median(PV1SCIE))
+q2 <- filter(dat, ST27Q01 == "Two") %>% group_by(CNT) %>% 
+    summarise(math_med_two = median(PV1MATH), 
+    read_med_two = median(PV1READ), 
+    sci_med_two = median(PV1SCIE))
+q3 <- filter(dat, ST27Q01 == "Three or more") %>% group_by(CNT) %>% 
+    summarise(math_med_three = median(PV1MATH), 
+    read_med_three = median(PV1READ), 
+    sci_med_three = median(PV1SCIE))
+dat_cell <- Reduce(function(...) merge(..., by="CNT"), 
+                 list(q0, q1, q2, q3))
+rm(q0, q1, q2, q3)
+dat_cell <- mutate(dat_cell, math_corr = 
+                    ifelse(math_med_one <= math_med_two & 
+                         math_med_two <=  math_med_three, 1,
+                    ifelse(math_med_one >= math_med_two & 
+                         math_med_two >=  math_med_three, -1, 0)),
+                 read_corr = 
+                    ifelse(read_med_one <= read_med_two & 
+                         read_med_two <=  read_med_three, 1,
+                    ifelse(read_med_one >= read_med_two & 
+                         read_med_two >=  read_med_three, -1, 0)),
+                 sci_corr = 
+                    ifelse(sci_med_one <= sci_med_two & 
+                         sci_med_two <=  sci_med_three, 1,
+                    ifelse(sci_med_one >= sci_med_two & 
+                         sci_med_two >=  sci_med_three, -1, 0)))
+# dat_cell$Income <- dat_cell$CNT %in% rich_cnt
+dat_cell <- left_join(dat_cell, gdp, by="CNT", copy = TRUE)
+dat_cell$Income <- ifelse(as.numeric(dat_cell$X2012) > 30000, "High",                          
+                  ifelse(as.numeric(dat_cell$X2012) > 15000, "Medium", "Low"))
+```
+
+```{r}
+p1 <- ggplot(dat_cell) + 
+  geom_histogram(aes(math_corr, fill=Income), 
+                 position = "dodge") + 
+  theme(legend.position="none") +
+  ggtitle("Cell")
+p2 <- ggplot(dat_cell) + 
+  geom_histogram(aes(read_corr, fill=Income), 
+                 position = "dodge") + 
+  theme(legend.position="none")
+p3 <- ggplot(dat_cell) + 
+  geom_histogram(aes(sci_corr, fill=Income), 
+                 position = "dodge") + 
+  theme(legend.position="none") 
+g <- ggplotGrob(p1 + theme(legend.position="right"))$grobs
+legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+grid.arrange(p1, p2, p3, legend, ncol = 2)
+```
+
+```{r}
+q0 <- filter(dat, ST27Q02 == "None") %>% group_by(CNT) %>% 
+    summarise(math_med_none = median(PV1MATH), 
+    read_med_none = median(PV1READ), 
+    sci_med_none = median(PV1SCIE)) 
+q1 <- filter(dat, ST27Q02 == "One") %>% group_by(CNT) %>% 
+    summarise(math_med_one = median(PV1MATH), 
+    read_med_one = median(PV1READ), 
+    sci_med_one = median(PV1SCIE))
+q2 <- filter(dat, ST27Q02 == "Two") %>% group_by(CNT) %>% 
+    summarise(math_med_two = median(PV1MATH), 
+    read_med_two = median(PV1READ), 
+    sci_med_two = median(PV1SCIE))
+q3 <- filter(dat, ST27Q02 == "Three or more") %>% group_by(CNT) %>% 
+    summarise(math_med_three = median(PV1MATH), 
+    read_med_three = median(PV1READ), 
+    sci_med_three = median(PV1SCIE))
+dat_tv <- Reduce(function(...) merge(..., by="CNT"), 
+                 list(q0, q1, q2, q3))
+rm(q0, q1, q2, q3)
+dat_tv <- mutate(dat_tv, math_corr = 
+                    ifelse(math_med_one <= math_med_two & 
+                         math_med_two <=  math_med_three, 1,
+                    ifelse(math_med_one >= math_med_two & 
+                         math_med_two >=  math_med_three, -1, 0)),
+                 read_corr = 
+                    ifelse(read_med_one <= read_med_two & 
+                         read_med_two <=  read_med_three, 1,
+                    ifelse(read_med_one >= read_med_two & 
+                         read_med_two >=  read_med_three, -1, 0)),
+                 sci_corr = 
+                    ifelse(sci_med_one <= sci_med_two & 
+                         sci_med_two <=  sci_med_three, 1,
+                    ifelse(sci_med_one >= sci_med_two & 
+                         sci_med_two >=  sci_med_three, -1, 0)))
+dat_tv <- left_join(dat_tv, gdp, by="CNT", copy = TRUE)
+dat_tv$Income <- ifelse(as.numeric(dat_tv$X2012) > 30000, "High",                          
+                  ifelse(as.numeric(dat_tv$X2012) > 15000, "Medium", "Low"))
+```
+
+```{r}
+p1 <- ggplot(dat_tv) + 
+  geom_histogram(aes(math_corr, fill=Income), 
+                 position = "dodge") + 
+  theme(legend.position="none") +
+  ggtitle("TV")
+p2 <- ggplot(dat_tv) + 
+  geom_histogram(aes(read_corr, fill=Income), 
+                 position = "dodge") + 
+  theme(legend.position="none")
+p3 <- ggplot(dat_tv) + 
+  geom_histogram(aes(sci_corr, fill=Income), 
+                 position = "dodge") + 
+  theme(legend.position="none")
+g <- ggplotGrob(p1 + theme(legend.position="right"))$grobs
+legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+grid.arrange(p1, p2, p3, legend, ncol = 2)
+```
+
+```{r}
+q0 <- filter(dat, ST27Q03 == "None") %>% group_by(CNT) %>% 
+    summarise(math_med_none = median(PV1MATH), 
+    read_med_none = median(PV1READ), 
+    sci_med_none = median(PV1SCIE)) 
+q1 <- filter(dat, ST27Q03 == "One") %>% group_by(CNT) %>% 
+    summarise(math_med_one = median(PV1MATH), 
+    read_med_one = median(PV1READ), 
+    sci_med_one = median(PV1SCIE))
+q2 <- filter(dat, ST27Q03 == "Two") %>% group_by(CNT) %>% 
+    summarise(math_med_two = median(PV1MATH), 
+    read_med_two = median(PV1READ), 
+    sci_med_two = median(PV1SCIE))
+q3 <- filter(dat, ST27Q03 == "Three or more") %>% group_by(CNT) %>% 
+    summarise(math_med_three = median(PV1MATH), 
+    read_med_three = median(PV1READ), 
+    sci_med_three = median(PV1SCIE))
+dat_pc <- Reduce(function(...) merge(..., by="CNT"), 
+                 list(q0, q1, q2, q3))
+rm(q0, q1, q2, q3)
+dat_pc <- mutate(dat_pc, math_corr = 
+                    ifelse(math_med_one <= math_med_two & 
+                         math_med_two <=  math_med_three, 1,
+                    ifelse(math_med_one >= math_med_two & 
+                         math_med_two >=  math_med_three, -1, 0)),
+                 read_corr = 
+                    ifelse(read_med_one <= read_med_two & 
+                         read_med_two <=  read_med_three, 1,
+                    ifelse(read_med_one >= read_med_two & 
+                         read_med_two >=  read_med_three, -1, 0)),
+                 sci_corr = 
+                    ifelse(sci_med_one <= sci_med_two & 
+                         sci_med_two <=  sci_med_three, 1,
+                    ifelse(sci_med_one >= sci_med_two & 
+                         sci_med_two >=  sci_med_three, -1, 0)))
+dat_pc <- left_join(dat_pc, gdp, by="CNT", copy = TRUE)
+dat_pc$Income <- ifelse(as.numeric(dat_pc$X2012) > 30000, "High",                          
+                  ifelse(as.numeric(dat_pc$X2012) > 15000, "Medium", "Low"))
+```
+
+```{r}
+p1 <- ggplot(dat_pc) + 
+  geom_histogram(aes(math_corr, fill=Income), 
+                 position = "dodge") + 
+  theme(legend.position="none") +
+  ggtitle("pc")
+p2 <- ggplot(dat_pc) + 
+  geom_histogram(aes(read_corr, fill=Income), 
+                 position = "dodge") + 
+  theme(legend.position="none")
+p3 <- ggplot(dat_pc) + 
+  geom_histogram(aes(sci_corr, fill=Income), 
+                 position = "dodge") + 
+  theme(legend.position="none") 
+g <- ggplotGrob(p1 + theme(legend.position="right"))$grobs
+legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+grid.arrange(p1, p2, p3, legend, ncol = 2)
+```
+
+
+```{r}
+q0 <- filter(dat, ST27Q04 == "None") %>% group_by(CNT) %>% 
+    summarise(math_med_none = median(PV1MATH), 
+    read_med_none = median(PV1READ), 
+    sci_med_none = median(PV1SCIE)) 
+q1 <- filter(dat, ST27Q04 == "One") %>% group_by(CNT) %>% 
+    summarise(math_med_one = median(PV1MATH), 
+    read_med_one = median(PV1READ), 
+    sci_med_one = median(PV1SCIE))
+q2 <- filter(dat, ST27Q04 == "Two") %>% group_by(CNT) %>% 
+    summarise(math_med_two = median(PV1MATH), 
+    read_med_two = median(PV1READ), 
+    sci_med_two = median(PV1SCIE))
+q3 <- filter(dat, ST27Q04 == "Three or more") %>% group_by(CNT) %>% 
+    summarise(math_med_three = median(PV1MATH), 
+    read_med_three = median(PV1READ), 
+    sci_med_three = median(PV1SCIE))
+dat_car <- Reduce(function(...) merge(..., by="CNT"), 
+                 list(q0, q1, q2, q3))
+rm(q0, q1, q2, q3)
+dat_car <- mutate(dat_car, math_corr = 
+                    ifelse(math_med_one <= math_med_two & 
+                         math_med_two <=  math_med_three, 1,
+                    ifelse(math_med_one >= math_med_two & 
+                         math_med_two >=  math_med_three, -1, 0)),
+                 read_corr = 
+                    ifelse(read_med_one <= read_med_two & 
+                         read_med_two <=  read_med_three, 1,
+                    ifelse(read_med_one >= read_med_two & 
+                         read_med_two >=  read_med_three, -1, 0)),
+                 sci_corr = 
+                    ifelse(sci_med_one <= sci_med_two & 
+                         sci_med_two <=  sci_med_three, 1,
+                    ifelse(sci_med_one >= sci_med_two & 
+                         sci_med_two >=  sci_med_three, -1, 0)))
+dat_car <- left_join(dat_car, gdp, by="CNT", copy = TRUE)
+dat_car$Income <- ifelse(as.numeric(dat_car$X2012) > 30000, "High",                          
+                  ifelse(as.numeric(dat_car$X2012) > 15000, "Medium", "Low"))
+```
+
+```{r}
+p1 <- ggplot(dat_car) + 
+  geom_histogram(aes(math_corr, fill=Income), 
+                 position = "dodge") + 
+  theme(legend.position="none") +
+  ggtitle("car")
+p2 <- ggplot(dat_car) + 
+  geom_histogram(aes(read_corr, fill=Income), 
+                 position = "dodge") + 
+  theme(legend.position="none")
+p3 <- ggplot(dat_car) + 
+  geom_histogram(aes(sci_corr, fill=Income), 
+                 position = "dodge") + 
+  theme(legend.position="none") 
+g <- ggplotGrob(p1 + theme(legend.position="right"))$grobs
+legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+grid.arrange(p1, p2, p3, legend, ncol = 2)
+```
+
+
+```{r}
+q0 <- filter(dat, ST27Q05 == "None") %>% group_by(CNT) %>% 
+    summarise(math_med_none = median(PV1MATH), 
+    read_med_none = median(PV1READ), 
+    sci_med_none = median(PV1SCIE)) 
+q1 <- filter(dat, ST27Q05 == "One") %>% group_by(CNT) %>% 
+    summarise(math_med_one = median(PV1MATH), 
+    read_med_one = median(PV1READ), 
+    sci_med_one = median(PV1SCIE))
+q2 <- filter(dat, ST27Q05 == "Two") %>% group_by(CNT) %>% 
+    summarise(math_med_two = median(PV1MATH), 
+    read_med_two = median(PV1READ), 
+    sci_med_two = median(PV1SCIE))
+q3 <- filter(dat, ST27Q05 == "Three or more") %>% group_by(CNT) %>% 
+    summarise(math_med_three = median(PV1MATH), 
+    read_med_three = median(PV1READ), 
+    sci_med_three = median(PV1SCIE))
+dat_bathroom <- Reduce(function(...) merge(..., by="CNT"), 
+                 list(q0, q1, q2, q3))
+rm(q0, q1, q2, q3)
+dat_bathroom <- mutate(dat_bathroom, math_corr = 
+                    ifelse(math_med_one <= math_med_two & 
+                         math_med_two <=  math_med_three, 1,
+                    ifelse(math_med_one >= math_med_two & 
+                         math_med_two >=  math_med_three, -1, 0)),
+                 read_corr = 
+                    ifelse(read_med_one <= read_med_two & 
+                         read_med_two <=  read_med_three, 1,
+                    ifelse(read_med_one >= read_med_two & 
+                         read_med_two >=  read_med_three, -1, 0)),
+                 sci_corr = 
+                    ifelse(sci_med_one <= sci_med_two & 
+                         sci_med_two <=  sci_med_three, 1,
+                    ifelse(sci_med_one >= sci_med_two & 
+                         sci_med_two >=  sci_med_three, -1, 0)))
+dat_bathroom <- left_join(dat_bathroom, gdp, by="CNT", copy = TRUE)
+dat_bathroom$Income <- ifelse(as.numeric(dat_bathroom$X2012) > 30000, "High",                          
+                  ifelse(as.numeric(dat_bathroom$X2012) > 15000, "Medium", "Low"))
+```
+
+```{r}
+p1 <- ggplot(dat_bathroom) + 
+  geom_histogram(aes(math_corr, fill=Income), 
+                 position = "dodge") + 
+  theme(legend.position="none") +
+  ggtitle("bathroom")
+p2 <- ggplot(dat_bathroom) + 
+  geom_histogram(aes(read_corr, fill=Income), 
+                 position = "dodge") + 
+  theme(legend.position="none")
+p3 <- ggplot(dat_bathroom) + 
+  geom_histogram(aes(sci_corr, fill=Income), 
+                 position = "dodge") + 
+  theme(legend.position="none") 
+g <- ggplotGrob(p1 + theme(legend.position="right"))$grobs
+legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+grid.arrange(p1, p2, p3, legend, ncol = 2)
+```
+
+```{r}
+abnom_deved <- subset(dat_tv, math_corr != -1 & Income, select = c(CNT, math_med_none, math_med_one, math_med_two, math_med_three, math_corr, X2012))
+abnom_deving <- subset(dat_tv, math_corr != 1 & !Income, select = c(CNT, math_med_none, math_med_one, math_med_two, math_med_three, math_corr, X2012))
+```
+
+```{r}
+summary <- expand.grid(c("High", "Medium", "Low"), c(1, 0, -1))
+colnames(summary) <- c("Income", "Correlation")
+
+tmp <- dat_bathroom %>% group_by(Income, math_corr) %>% summarise(Correlation = math_corr, bathroom_math_count = n())
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
+tmp <- dat_bathroom %>% group_by(Income, read_corr) %>% summarise(Correlation = read_corr, bathroom_read_count = n())
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
+tmp <- dat_bathroom %>% group_by(Income, sci_corr) %>% summarise(Correlation = sci_corr, bathroom_sci_count = n())
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
+
+tmp <- dat_car %>% group_by(Income, math_corr) %>% summarise(Correlation = math_corr, car_math_count = n())
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
+tmp <- dat_car %>% group_by(Income, read_corr) %>% summarise(Correlation = read_corr, car_read_count = n())
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
+tmp <- dat_car %>% group_by(Income, sci_corr) %>% summarise(Correlation = sci_corr, car_sci_count = n())
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
+
+tmp <- dat_cell %>% group_by(Income, math_corr) %>% summarise(Correlation = math_corr, cell_math_count = n())
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
+tmp <- dat_cell %>% group_by(Income, read_corr) %>% summarise(Correlation = read_corr, cell_read_count = n())
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
+tmp <- dat_cell %>% group_by(Income, sci_corr) %>% summarise(Correlation = sci_corr, cell_sci_count = n())
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
+
+tmp <- dat_pc %>% group_by(Income, math_corr) %>% summarise(Correlation = math_corr, pc_math_count = n())
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
+tmp <- dat_pc %>% group_by(Income, read_corr) %>% summarise(Correlation = read_corr, pc_read_count = n())
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
+tmp <- dat_pc %>% group_by(Income, sci_corr) %>% summarise(Correlation = sci_corr, pc_sci_count = n())
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
+
+tmp <- dat_tv %>% group_by(Income, math_corr) %>% summarise(Correlation = math_corr, tv_math_count = n())
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
+tmp <- dat_tv %>% group_by(Income, read_corr) %>% summarise(Correlation = read_corr, tv_read_count = n())
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
+tmp <- dat_tv %>% group_by(Income, sci_corr) %>% summarise(Correlation = sci_corr, tv_sci_count = n())
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
+
+summary[is.na(summary)] <- 0
+```
+
+```{r}
+summary <- expand.grid(c("High", "Medium", "Low"), c(1, 0, -1), c("Maths", "Science", "Reading"))
+colnames(summary) <- c("Income", "Correlation", "Subject")
+
+tmp <- dat_bathroom %>% group_by(Income, math_corr) %>% summarise(Correlation = math_corr, bathroom_math = n(), Subject = "Maths")
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation", "Subject"), all.x = TRUE)
+tmp <- dat_bathroom %>% group_by(Income, read_corr) %>% summarise(Correlation = read_corr, bathroom_read = n(), Subject = "Reading")
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation", "Subject"), all.x = TRUE)
+tmp <- dat_bathroom %>% group_by(Income, sci_corr) %>% summarise(Correlation = sci_corr, bathroom_sci = n(), Subject = "Science")
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation", "Subject"), all.x = TRUE)
+summary[is.na(summary)] <- 0
+summary <- mutate(summary, Count_bathroom = bathroom_math + bathroom_read + bathroom_sci)
+summary <- subset(summary, select = -c(bathroom_math, bathroom_read, bathroom_sci))
+
+tmp <- dat_car %>% group_by(Income, math_corr) %>% summarise(Correlation = math_corr, car_math = n(), Subject = "Maths")
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation", "Subject"), all.x = TRUE)
+tmp <- dat_car %>% group_by(Income, read_corr) %>% summarise(Correlation = read_corr, car_read = n(), Subject = "Reading")
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation", "Subject"), all.x = TRUE)
+tmp <- dat_car %>% group_by(Income, sci_corr) %>% summarise(Correlation = sci_corr, car_sci = n(), Subject = "Science")
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation", "Subject"), all.x = TRUE)
+summary[is.na(summary)] <- 0
+summary <- mutate(summary, Count_car = car_math + car_read + car_sci)
+summary <- subset(summary, select = -c(car_math, car_read, car_sci))
+
+tmp <- dat_cell %>% group_by(Income, math_corr) %>% summarise(Correlation = math_corr, cell_math = n(), Subject = "Maths")
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation", "Subject"), all.x = TRUE)
+tmp <- dat_cell %>% group_by(Income, read_corr) %>% summarise(Correlation = read_corr, cell_read = n(), Subject = "Reading")
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation", "Subject"), all.x = TRUE)
+tmp <- dat_cell %>% group_by(Income, sci_corr) %>% summarise(Correlation = sci_corr, cell_sci = n(), Subject = "Science")
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation", "Subject"), all.x = TRUE)
+summary[is.na(summary)] <- 0
+summary <- mutate(summary, Count_cell = cell_math + cell_read + cell_sci)
+summary <- subset(summary, select = -c(cell_math, cell_read, cell_sci))
+
+tmp <- dat_pc %>% group_by(Income, math_corr) %>% summarise(Correlation = math_corr, pc_math = n(), Subject = "Maths")
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation", "Subject"), all.x = TRUE)
+tmp <- dat_pc %>% group_by(Income, read_corr) %>% summarise(Correlation = read_corr, pc_read = n(), Subject = "Reading")
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation", "Subject"), all.x = TRUE)
+tmp <- dat_pc %>% group_by(Income, sci_corr) %>% summarise(Correlation = sci_corr, pc_sci = n(), Subject = "Science")
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation", "Subject"), all.x = TRUE)
+summary[is.na(summary)] <- 0
+summary <- mutate(summary, Count_pc = pc_math + pc_read + pc_sci)
+summary <- subset(summary, select = -c(pc_math, pc_read, pc_sci))
+
+tmp <- dat_tv %>% group_by(Income, math_corr) %>% summarise(Correlation = math_corr, tv_math = n(), Subject = "Maths")
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation", "Subject"), all.x = TRUE)
+tmp <- dat_tv %>% group_by(Income, read_corr) %>% summarise(Correlation = read_corr, tv_read = n(), Subject = "Reading")
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation", "Subject"), all.x = TRUE)
+tmp <- dat_tv %>% group_by(Income, sci_corr) %>% summarise(Correlation = sci_corr, tv_sci = n(), Subject = "Science")
+summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation", "Subject"), all.x = TRUE)
+summary[is.na(summary)] <- 0
+summary <- mutate(summary, Count_tv = tv_math + tv_read + tv_sci)
+summary <- subset(summary, select = -c(tv_math, tv_read, tv_sci))
+```
+
+```{r}
+summary[summary$Correlation == 1,]$Correlation<-"Positive"
+summary[summary$Correlation == -1,]$Correlation<-"Negative"
+summary[summary$Correlation == 0,]$Correlation<-"Insignificant"
+```
+
+```{r}
+write.table(dat, file='generated_data/dat_simplified.tsv', quote = FALSE, sep='\t', row.names = FALSE)
+write.table(gdp, file='generated_data/gdp_pcap.tsv', quote = FALSE, sep='\t', row.names = FALSE)
+write.table(summary, file='generated_data/summary.tsv', row.names = FALSE, quote = FALSE, sep='\t')
+write.table(dat_bathroom, file='generated_data/dat_bathroom.tsv', quote = FALSE, sep='\t', row.names = FALSE)
+write.table(dat_car, file='generated_data/dat_car.tsv', quote = FALSE, sep='\t', row.names = FALSE)
+write.table(dat_cell, file='generated_data/dat_cell.tsv', quote = FALSE, sep='\t', row.names = FALSE)
+write.table(dat_pc, file='generated_data/dat_pc.tsv', quote = FALSE, sep='\t', row.names = FALSE)
+write.table(dat_tv, file='generated_data/dat_tv.tsv', quote = FALSE, sep='\t', row.names = FALSE)
+```
+
+```{r}
+write.table(dt_bathroom, file='generated_data/dat_bathroom.tsv', quote = FALSE, sep='\t', row.names = FALSE)
+write.table(dt_car, file='generated_data/dat_car.tsv', quote = FALSE, sep='\t', row.names = FALSE)
+write.table(dt_cell, file='generated_data/dat_cell.tsv', quote = FALSE, sep='\t', row.names = FALSE)
+write.table(dt_pc, file='generated_data/dat_pc.tsv', quote = FALSE, sep='\t', row.names = FALSE)
+write.table(dt_tv, file='generated_data/dat_tv.tsv', quote = FALSE, sep='\t', row.names = FALSE)
+```
+
+
+```{r}
+write.table(summary, file='generated_data/sum.tsv', row.names = FALSE, quote=FALSE, sep='\t')
+```
+
+```{r}
+modified <- unname(alply(dt_bathroom, 1, identity))
+cat(toJSON(modified), file='generated_data/dat_bathroom.json')
+modified <- unname(alply(dt_car, 1, identity))
+cat(toJSON(modified), file='generated_data/dat_car.json')
+modified <- unname(alply(dt_cell, 1, identity))
+cat(toJSON(modified), file='generated_data/dat_cell.json')
+modified <- unname(alply(dt_tv, 1, identity))
+cat(toJSON(modified), file='generated_data/dat_tv.json')
+modified <- unname(alply(dt_pc, 1, identity))
+cat(toJSON(modified), file='generated_data/dat_pc.json')
+```
