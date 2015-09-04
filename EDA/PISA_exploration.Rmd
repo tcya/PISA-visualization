@@ -51,10 +51,6 @@ gdp <- merge(data.frame(CNT = unique(dat$CNT)), gdp, by = "CNT", all.x=TRUE)
 ```
 
 ```{r}
-dat_sample <- data.frame(dat[sample(1:nrow(dat),1000,replace=FALSE),])
-```
-
-```{r}
 ggplot(aes(x = ST27Q01, y = PV1MATH), data = subset(dat, !is.na(ST27Q01))) + geom_boxplot()#phone
 ggplot(aes(x = ST27Q02, y = PV1MATH), data = subset(dat, !is.na(ST27Q02))) + geom_boxplot()#tv
 ggplot(aes(x = ST27Q03, y = PV1MATH), data = subset(dat, !is.na(ST27Q03))) + geom_boxplot()#pc
@@ -446,48 +442,6 @@ abnom_deving <- subset(dat_tv, math_corr != 1 & !Income, select = c(CNT, math_me
 ```
 
 ```{r}
-summary <- expand.grid(c("High", "Medium", "Low"), c(1, 0, -1))
-colnames(summary) <- c("Income", "Correlation")
-
-tmp <- dat_bathroom %>% group_by(Income, math_corr) %>% summarise(Correlation = math_corr, bathroom_math_count = n())
-summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
-tmp <- dat_bathroom %>% group_by(Income, read_corr) %>% summarise(Correlation = read_corr, bathroom_read_count = n())
-summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
-tmp <- dat_bathroom %>% group_by(Income, sci_corr) %>% summarise(Correlation = sci_corr, bathroom_sci_count = n())
-summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
-
-tmp <- dat_car %>% group_by(Income, math_corr) %>% summarise(Correlation = math_corr, car_math_count = n())
-summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
-tmp <- dat_car %>% group_by(Income, read_corr) %>% summarise(Correlation = read_corr, car_read_count = n())
-summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
-tmp <- dat_car %>% group_by(Income, sci_corr) %>% summarise(Correlation = sci_corr, car_sci_count = n())
-summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
-
-tmp <- dat_cell %>% group_by(Income, math_corr) %>% summarise(Correlation = math_corr, cell_math_count = n())
-summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
-tmp <- dat_cell %>% group_by(Income, read_corr) %>% summarise(Correlation = read_corr, cell_read_count = n())
-summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
-tmp <- dat_cell %>% group_by(Income, sci_corr) %>% summarise(Correlation = sci_corr, cell_sci_count = n())
-summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
-
-tmp <- dat_pc %>% group_by(Income, math_corr) %>% summarise(Correlation = math_corr, pc_math_count = n())
-summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
-tmp <- dat_pc %>% group_by(Income, read_corr) %>% summarise(Correlation = read_corr, pc_read_count = n())
-summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
-tmp <- dat_pc %>% group_by(Income, sci_corr) %>% summarise(Correlation = sci_corr, pc_sci_count = n())
-summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
-
-tmp <- dat_tv %>% group_by(Income, math_corr) %>% summarise(Correlation = math_corr, tv_math_count = n())
-summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
-tmp <- dat_tv %>% group_by(Income, read_corr) %>% summarise(Correlation = read_corr, tv_read_count = n())
-summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
-tmp <- dat_tv %>% group_by(Income, sci_corr) %>% summarise(Correlation = sci_corr, tv_sci_count = n())
-summary <- merge(summary, as.data.frame(tmp)[-2], by=c("Income", "Correlation"), all.x = TRUE)
-
-summary[is.na(summary)] <- 0
-```
-
-```{r}
 summary <- expand.grid(c("High", "Medium", "Low"), c(1, 0, -1), c("Maths", "Science", "Reading"))
 colnames(summary) <- c("Income", "Correlation", "Subject")
 
@@ -549,27 +503,8 @@ summary[summary$Correlation == 0,]$Correlation<-"Insignificant"
 ```
 
 ```{r}
-write.table(dat, file='generated_data/dat_simplified.tsv', quote = FALSE, sep='\t', row.names = FALSE)
 write.table(gdp, file='generated_data/gdp_pcap.tsv', quote = FALSE, sep='\t', row.names = FALSE)
 write.table(summary, file='generated_data/summary.tsv', row.names = FALSE, quote = FALSE, sep='\t')
-write.table(dat_bathroom, file='generated_data/dat_bathroom.tsv', quote = FALSE, sep='\t', row.names = FALSE)
-write.table(dat_car, file='generated_data/dat_car.tsv', quote = FALSE, sep='\t', row.names = FALSE)
-write.table(dat_cell, file='generated_data/dat_cell.tsv', quote = FALSE, sep='\t', row.names = FALSE)
-write.table(dat_pc, file='generated_data/dat_pc.tsv', quote = FALSE, sep='\t', row.names = FALSE)
-write.table(dat_tv, file='generated_data/dat_tv.tsv', quote = FALSE, sep='\t', row.names = FALSE)
-```
-
-```{r}
-write.table(dt_bathroom, file='generated_data/dat_bathroom.tsv', quote = FALSE, sep='\t', row.names = FALSE)
-write.table(dt_car, file='generated_data/dat_car.tsv', quote = FALSE, sep='\t', row.names = FALSE)
-write.table(dt_cell, file='generated_data/dat_cell.tsv', quote = FALSE, sep='\t', row.names = FALSE)
-write.table(dt_pc, file='generated_data/dat_pc.tsv', quote = FALSE, sep='\t', row.names = FALSE)
-write.table(dt_tv, file='generated_data/dat_tv.tsv', quote = FALSE, sep='\t', row.names = FALSE)
-```
-
-
-```{r}
-write.table(summary, file='generated_data/sum.tsv', row.names = FALSE, quote=FALSE, sep='\t')
 ```
 
 ```{r}
