@@ -7,163 +7,7 @@
   <!-- // <script src="colorbrewer.js"></script> -->
   <script src="http://colorbrewer2.org/export/colorbrewer.js"></script>
   <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
-  <style>
-    h1, h2, h3 {
-      text-align: center;
-      color: black;
-      margin-bottom: 0;
-    }
-
-    button {
-      background-color: lightblue;
-      float: left;
-      margin-right: 5px;
-    }
-
-    #prev {
-      background-color: lightgray;
-      color: white;
-    }
-
-    #svg-map {
-      margin:10px 10px 0 10px;
-      border:2px solid #000;
-      border-radius: 5px;
-      overflow:hidden;
-      width: 98%;
-    }
-
-    #legend-menu {
-      width: 98%;
-    }
-
-    select {
-      float: right;
-    }
-
-    .list-inline {
-      padding: 0 0 0 1.5em;
-      display: table;
-      width: 80em;
-      float: right;
-      margin-bottom: 0;
-    }
-
-    li {
-      list-style: none;
-      text-align: right;
-      vertical-align: middle;
-      display: inline-block;
-      border-top-width: 15px;
-      border-top-style: solid;
-      font-size: .75em;
-      width: 6%;
-      padding-left: 0;
-      padding-right: 0;
-      font-size: 14px;
-    }
-
-    ul.navi {
-      float: left;
-      margin: 0;
-      padding: 0;
-    }
-
-    #map-container {
-/*      position: absolute;
-*/    }
-
-    #legend_name {
-      width: 10em;
-    }
-
-    #maptip {
-      position: absolute;
-      z-index: 10;
-      visibility: hidden;
-      -moz-transition: all 0.15s;
-      -o-transition: all 0.15s;
-      -webkit-transition: all 0.15s;
-      transition: all 0.15s;
-      opacity: 0.90;
-      min-width: 60px;
-      height: auto;
-      padding: 10px;
-      background-color: white;
-      -webkit-border-radius: 5px;
-      -moz-border-radius: 5px;
-      border-radius: 5px;
-      -webkit-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
-      -moz-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
-      box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
-      pointer-events: none;
-    }
-
-    .box-plot {
-      float: left;
-      width: 15%;
-      margin: 30px;
-    }
-
-    .box-svg {
-/*      width: 12%;
-      height: 250;
-*/      /*margin: 30px;*/
-    }
-    .axis {
-      font: 11px sans-serif;
-    }
-
-    .axis path,
-    .axis line {
-      fill: none;
-      stroke: #000;
-      shape-rendering: crispEdges;
-    }
-
-    .x.axis path {
-      display: none;
-    }
-
-    .x text {
-      /*font-family: sans-serif;*/
-      font-size: 14px;
-    }
-
-    #boxtip {
-      position: absolute;
-      z-index: 100;
-      visibility: hidden;
-      -moz-transition: all 0.15s;
-      -o-transition: all 0.15s;
-      -webkit-transition: all 0.15s;
-      transition: all 0.15s;
-      opacity: 0.90;
-      min-width: 60px;
-      height: auto;
-      padding: 10px;
-      background-color: white;
-      -webkit-border-radius: 5px;
-      -moz-border-radius: 5px;
-      border-radius: 5px;
-      -webkit-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
-      -moz-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
-      box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
-      pointer-events: none;
-    }
-
-
-    .chart {
-      float: left;
-      width: 40%;
-      margin-right: 100px;
-    }
-
-
-    /*#slide1 {display: none;}*/
-    /*#slide2 {display: none;}*/
-    /*#map-container {display: none;}*/
-  </style>
+  <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
 <h1>How does possession affect children's scores?</h1>
@@ -242,7 +86,7 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
       eval("slide" + page + "()");
   }
 
-  // slide1();
+  // Make the first page
   function slide1() {
       var t = "Does the use of computer, cell, tv... harm children's study? It's a controversial topic in daily life. Some people state that electronic devices make kids indulged and are distracting, while some argue that they help kids to get information. Surely they both have a point. The Programme for International Student Assessment (PISA) is an international assessment that measures 15-year-old students' reading, mathematics, and science literacy. It also collects family information about students, especially, it asks students the number of tv, car, cellphone, computer, and bathroom their families own. It provides a good way to test the common beliefs on the relation between family's possession and kids' study.<br>" +
         "I combine part of PISA 2012 data with the corresponding regions' GDP data and explore (for technical details, " +
@@ -258,7 +102,7 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
         .html(t);
   }
 
-  // slide2();
+  // Make the second page
   function slide2() {
       d3.json("EDA/generated_data/gdp_pisa.json", function(json) {
       var t = "Above are box plots for Peru and Vietnam. Both are low income countries. For most factors and subjects, scores increase significantly with the number of possession. Exceptions are that in Peru, the students in families with ≥3 cars perform worse than those with 2 cars. Maybe kids in such top rich families in a poor country don't need to study well. The rule holds in Vietnam too, but more interestingly, the scores start to worsen when families get 2 cars. Considering Vietnam is much poorer than Peru, maybe having 2 cars is enough to spoil kids. I suppose that the fortune has good effect for the poor, but not for the richest class.";
@@ -280,7 +124,7 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
       });
   }
 
-  // slide3();
+  // Make the third page
   function slide3() {
       d3.json("EDA/generated_data/gdp_pisa.json", function(json) {
       var t = "Now let's turn to rich countries. For most factors, they still have positive correlation with score, but not as significant as in poor countries. A significant exception is TV. It seems that in rich country, if you want your kids to be good students, you might want to have fewer TV. The trend is especially clear in Switzerland. There the number of TV has significant negative correlation with score. The reason may be that most people in rich countries can easily afford TV so the fortune effect is weak, while the distraction effect becomes important. It's partially verified in US, where students in the families with one TV perform better than those have none. There are more new poor immigrants in America than in Switzerland, who can't even afford one TV. Usually their kids have to struggle hard at school because of the weakness in language, economics, parental education... This abnormal trend may reflect their existence.";
@@ -305,7 +149,7 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
   // plot_boxes("United States"); WEIRD!!!! It can't access gdp.
 
 
-  // slide4();
+  // Make the fourth page
   function slide4() {
       d3.select("body")
         .append("div")
@@ -334,7 +178,7 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
       draw_counts("car", "#chart2");
   }
 
-  // slide5();
+  // Make the fifth page
   function slide5() {
       d3.select("body")
         .append("div")
@@ -362,7 +206,7 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
       draw_counts("pc", "#chart2");
   }
 
-  // slide6();
+  // Make the sixth page
   function slide6() {
       d3.select("body")
         .append("div")
@@ -384,7 +228,7 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
       draw_counts("tv", "#chart1");
   }
 
-  // slide7();
+  // Make the 7th page
   function slide7() {
       d3.select('body')
           .append('div')
@@ -399,7 +243,6 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
       d3.json("world_map.json", draw);
 
       function draw(geo_data) {
-        // "use strict";
         var margin = 75;
         var width = 1200 - margin;
         var height = 300 - margin;
@@ -523,6 +366,7 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
       }
   }
 
+  // Plot the count of correlation types
   function draw_counts(factor, selection) {
     d3.tsv("EDA/generated_data/summary.tsv", function (data) {
       var margin = {top: 20, right: 20, bottom: 30, left: 50},
@@ -600,6 +444,7 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
     });
   }
 
+  // Plot box plots for all five factors
   function plot_boxes(cnt, selection) {
     d3.select(selection)
       .append("div")
@@ -633,11 +478,10 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
         .attr("transform", "translate(" + (- 35) + "," + 100 + ") rotate(-90)")
         .text("Score");
 
+    // Plot the box plot for a certain factor
     function box_plot(factor) {
 
-      // var margin = {top: 50, right: 20, bottom: 50, left: 50};
       var width = document.getElementsByClassName('box-plot')[0].offsetWidth;
-      // var height = document.getElementsByClassName('box-plot')[0].offsetHeight;
       var height = 160;
       var margin = 50;
 
