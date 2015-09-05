@@ -393,7 +393,7 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
       var y = myChart.addMeasureAxis("y", "Count_" + factor);
       y.overrideMax = 30;
       y.fontSize = 15;
-      y.title = "Count";
+      y.title = "Number of countries";
       myChart.addSeries([ "Subject","Income"], dimple.plot.line);
       var s = myChart.addSeries("Income", dimple.plot.scatter);
       s.addOrderRule(["High", "Medium", "Low"]);
@@ -523,6 +523,7 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
           .append("g")
           .attr("transform", "translate(" + margin + "," + margin + ")");
 
+      // Load quantiles of scores for countries
       d3.json("EDA/generated_data/data.json", function(error, json) {
           if (error) return console.warn(error);
 
