@@ -5,6 +5,14 @@ I combine the PISA 2012 data with GDP to explore the correlation between family 
 Design
 
 PISA collects information how many car, cellphone, TV, computer and bathroom students have. For each country, I make a box plot of score for every factor. They show some interesting correlation. The increasing possession of some factors helps students' scores while some hurts. Countries are categorized by their GDP per capita and the type of correlations are summarized in a multiple line chart. Finally, an interactive map is presented for user to explore.
+The choice of colors: 
+I made the line charts in slide 4-6 first because they could be done with dimple.js. The color scheme was decided by dimple and I found it nice. As the result, I kept the scheme in box plots to make things consistent. I know there are some theories about color using, but here as it only needed three colors, so I chose from intuition. 
+The color of legend of GDP per capita was decided as follows, usually bad things (e.g., being a poor country) are presented by red/yellow, while good things by blue/purple. I observed that most countries have GDP per capita fewer than $100000, so I found a scale from red to purple with 10 classes on colorbrewer2.org.
+The choice of graph types: 
+I chose box plots instead of scatter plots or line charts of mean values to present the scores, because box plots convey more information. PISA is a really large dataset. It would be waste mean values. Box plots show information like the distribution of scores that other plots don't. Such information might be analyzed further, for example, related to Gini coefficients of countries. 
+I chose line charts rather than more usual bar charts because bar charts get messy easily here. My purpose was to compare the type of correlation for various type of countries. The stacked bar charts would be hard for comparison, while to compare in dodged bars, one's eyes have to skip two other types of country to find the next point of the same type. I believe the current line charts are the best choice.
+For the countries chosen in slide 2 and 3, they were chose a bit arbitrarily. Many low-income countries show the same effect, but Peru and Vietnam were the ones I found first, so I used them. USA was chose because we all care about it. Switzerland was chose because I was looking for a even richer country with high social welfare and fewer immigrants.
+
 
 Feedback
 
