@@ -12,7 +12,7 @@ I got three comments.
 1. There was a bug in the first page. If one clicks to the "technical detail" page and comes back, the page didn't load correctly;
 2. Add navigation to every page;
 3. Use a prettier font.
-I've improved the page accordingly. Checkout the oldest commits to see the initial version. 
+I've improved the page accordingly. Checkout the oldest commits to see the initial version. The GitHub link is https://github.com/tcya/PISA_visualization.
 
 Resources
 
