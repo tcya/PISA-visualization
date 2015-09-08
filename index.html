@@ -166,7 +166,41 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
         .attr("id", "slide4")
         .attr("class", "container chartContainer");
 
-      var t = 'Inspired by the observations, I summarize the correlation for all countries by income. From daily experience and the observation of data, I define low income country as one with GDP per capita < $15000, medium income as $15000  < GDP per capita < $30000, and the rest as high income countries. The data points of "none" possession were excluded because they might represent very different groups of people to the majority of society, as discussed before. From possessing one to two, to three and more, if a country' + "'" + "s median score strictly increases, it's defined as positive correlation; if the median decreases, it's a negative correlation; else, insignificant.<br>" +
+      var t = 'Inspired by the observations, I summarize the correlation for all countries by income. From daily experience and the observation of data, I define low income country as one with GDP per capita < $15000, medium income as $15000  < GDP per capita < $30000, and the rest as high income countries. The data points of "none" possession were excluded because they might represent very different groups of people to the majority of society, as discussed before. From possessing one to two, to three and more, if a country' + "'" + "s median score strictly increases, it's defined as positive correlation; if the median decreases, it's a negative correlation; else, insignificant. For example, the three items below have positive, negative, and insignificant correlations respectively.<br><br>" +
+        "<table>" +
+          "<tr>" +
+            "<td>Country</td>" +
+            "<td>Subject</td>" +
+            "<td>Median score for family with 1 TV</td>" +
+            "<td>Median score for family with 2 TVs</td>" +
+            "<td>Median score for family with >3 TVs</td>" +
+            "<td>Correlation</td>" +
+          "</tr>" +
+          "<tr>" +
+            "<td>Argentina</td>" +
+            "<td>Maths</td>" +
+            "<td>365.5632</td>" +
+            "<td>386.5555</td>" +
+            "<td>416.2720</td>" +
+            "<td>Positive</td>" +
+          "</tr>" +
+          "<tr>" +
+            "<td>Albania</td>" +
+            "<td>Maths</td>" +
+            "<td>397.9280</td>" +
+            "<td>395.2407</td>" +
+            "<td>392.4365</td>" +
+            "<td>Negative</td>" +
+          "</tr>" +
+          "<tr>" +
+            "<td>Croatia</td>" +
+            "<td>Maths</td>" +
+            "<td>471.3429</td>" +
+            "<td>464.3325</td>" +
+            "<td>472.2776</td>" +
+            "<td>Insignificant</td>" +
+          "</tr>" +
+        "</table>"
         "From the graphs we can see that in most countries having more bathrooms is positively correlated with scores, while the number of cars doesn't show a significant correlation.";
 
       d3.select("#slide4")

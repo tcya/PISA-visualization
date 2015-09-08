@@ -13,6 +13,17 @@ button {
 
 p {font: 16px sans-serif;}
 
+table
+  {
+  border-collapse:collapse;
+  }
+
+table,th, td
+  {
+  padding: 5px;
+  border: 1px solid black;
+  }
+
 #prev {
   background-color: lightgray;
   color: white;
