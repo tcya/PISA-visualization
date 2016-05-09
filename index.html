@@ -283,8 +283,8 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
       d3.json("world_map.json", draw);
 
       function draw(geo_data) {
-        var margin = 75;
-        var width = 1200 - margin;
+        var margin = 25;
+        var width = window.innerWidth - margin;
         var height = 300 - margin;
 
 
@@ -332,7 +332,7 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
         legend.append('li')
             .style('border-top-color', "white")
             .attr('id', 'legend_name')
-            .text("GDP per capita ($):");
+            .text("GDP per capita (K$):");
 
         legend.selectAll('li.key')
             .data(color.range())
@@ -342,7 +342,7 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
             .style('border-top-color', String)
             .text(function(d) {
                 var r = color.invertExtent(d);
-                return r[1];
+                return r[1] / 1000;
             });
 
         var maptip = d3.select("#map-container")
@@ -360,8 +360,9 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
             .attr('class', 'map');
 
         var projection = d3.geo.mercator()
-                               .scale(70)
-                               .translate([width / 2, height - 15]);
+                               .scale(50)
+                               .translate([width / 2, height - 80]);
+
 
         var path = d3.geo.path().projection(projection);
 
@@ -557,7 +558,7 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
 
       var svg = d3.select("#" + factor)
           .append("svg")
-          .attr("width", width + margin )
+          .attr("width", width + margin)
           .attr("height", height + margin + 50)
           .attr("class", "box-svg")
           .append("g")
