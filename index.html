@@ -378,9 +378,6 @@ I combine part of PISA 2012 data with the corresponding regions' GDP data and ex
           .scale(scale).translate(offset);
         path = path.projection(projection);
 
-
-        var path = d3.geo.path().projection(projection);
-
         var map = svg_map.selectAll('path')
                      .data(geo_data.features)
                      .enter()
