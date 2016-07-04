@@ -67,6 +67,9 @@ li {
   padding-right: 0;
 }
 
+.key {
+  font-size: 0.6em;
+}
 ul.navi {
   float: left;
   margin: 0;
